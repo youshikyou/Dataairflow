@@ -21,8 +21,8 @@ default_args = {
 dag = DAG('airflow_project',
           default_args=default_args,
           description='Load and transform data in Redshift with Airflow',
-          start_date=datetime(2018, 1, 1, 0, 0, 0, 0),
-          end_date=datetime(2018, 1, 2, 0, 0, 0, 0),
+          start_date=datetime(2018, 11, 1, 0, 0, 0, 0),
+          end_date=datetime(2018, 11, 2, 0, 0, 0, 0),
           schedule_interval='@daily',
           catchup=False
         )
