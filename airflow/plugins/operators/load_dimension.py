@@ -20,7 +20,6 @@ class LoadDimensionOperator(BaseOperator):
         # Map params here
         # Example:
         # self.conn_id = conn_id
-        self.conn_id= 
 
     def execute(self, context):
         self.log.info('LoadDimensionOperator not implemented yet')

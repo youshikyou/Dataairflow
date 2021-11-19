@@ -2,7 +2,6 @@ from datetime import datetime
 from airflow import DAG
 from airflow.operators.postgres_operator import PostgresOperator
 from helpers import SqlQueries
-from udac_example_dag import default_args
 
 
 default_args = {
