@@ -22,6 +22,6 @@ with DAG(
         task_id='Create_tables',
         dag=dag,
         postgres_conn_id="redshift",
-        schedule_interval="@once",
+        schedule_interval="@daily",
         sql='create_tables.sql'
     )

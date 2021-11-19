@@ -9,20 +9,21 @@ from helpers import SqlQueries
 
 
 default_args = {
-    'owner': 'udacity',
+    'owner': 'xxxx',
     'depends_on_past': False,
     'email_on_retry': False,
     'retries': 3,
-    'retry_delay': timedelta(minutes=5),
+    'retry_delay': timedelta(minutes=1),
+    
 }
 
 dag = DAG('airflow_project',
           default_args=default_args,
           description='Load and transform data in Redshift with Airflow',
           start_date=datetime(2018, 11, 1, 0, 0, 0, 0),
-          end_date=datetime(2018, 11, 2, 0, 0, 0, 0),
-          schedule_interval='@daily',
-          catchup=False
+          end_date=datetime(2018, 11, 5, 0, 0, 0, 0),
+          schedule_interval="@daily",
+          catchup=True,
         )
 
 start_operator = DummyOperator(task_id='Begin_execution',dag=dag)
@@ -51,27 +52,35 @@ load_songplays_table = LoadFactOperator(
     task_id='Load_songplays_fact_table',
     dag=dag,
     redshift_conn_id="redshift",
-    aws_credentials_id="aws_credentials",    
+    aws_credentials_id="aws_credentials"  
 )
 
 load_user_dimension_table = LoadDimensionOperator(
     task_id='Load_user_dim_table',
     dag=dag,
+    redshift_conn_id="redshift",
+    aws_credentials_id="aws_credentials"  
 )
 
 load_song_dimension_table = LoadDimensionOperator(
     task_id='Load_song_dim_table',
-    dag=dag
+    dag=dag,
+    redshift_conn_id="redshift",
+    aws_credentials_id="aws_credentials"
 )
 
 load_artist_dimension_table = LoadDimensionOperator(
     task_id='Load_artist_dim_table',
-    dag=dag
+    dag=dag,
+    redshift_conn_id="redshift",
+    aws_credentials_id="aws_credentials"
 )
 
 load_time_dimension_table = LoadDimensionOperator(
     task_id='Load_time_dim_table',
-    dag=dag
+    dag=dag,
+    redshift_conn_id="redshift",
+    aws_credentials_id="aws_credentials"
 )
 
 run_quality_checks = DataQualityOperator(

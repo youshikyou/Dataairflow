@@ -8,7 +8,8 @@ class LoadFactOperator(BaseOperator):
     ui_color = '#F98866'
 
     @apply_defaults
-    def __init__(self, redshift_conn_id="", aws_credentials_id="", *args, **kwargs):
+    def __init__(self, redshift_conn_id="", aws_credentials_id="", 
+                 *args, **kwargs):
 
         super(LoadFactOperator, self).__init__(*args, **kwargs)
         self.redshift_conn_id=redshift_conn_id
