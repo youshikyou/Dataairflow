@@ -12,7 +12,8 @@ class StageToRedshiftOperator(BaseOperator):
         ACCESS_EKY_ID '{aws_credentials_id}'
         SECRET_ACCESS_KEY '{aws_secret_key}'
         IGNOREHEADER {ignore_headers}
-        DELIMITER '{delimiter}'        
+        DELIMITER '{delimiter}'
+        JSON '{json_path}'
     """
     @apply_defaults
     def __init__(self,
@@ -21,6 +22,7 @@ class StageToRedshiftOperator(BaseOperator):
                  table="",
                  s3_bucket="",
                  s3_key="",
+                 json_path="",
                  delimiter=",",
                  ignore_headers=1,            
                  *args, **kwargs):
@@ -31,6 +33,7 @@ class StageToRedshiftOperator(BaseOperator):
         self.table=table
         self.s3_bucket=s3_bucket
         self.s3_key=s3_key
+        self.json_path=json_path
         self.delimiter=delimiter
         self.ignore_headers=ignore_headers
 
@@ -41,7 +44,7 @@ class StageToRedshiftOperator(BaseOperator):
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
         self.log.info("Copying data from S3 to Redshift")
         rendered_key = self.s3_key.format(**context) #dereferenced {{execution_date}} and {{ds}}
-        s3_path = "{}/{}".format(self.s3_bucket, rendered_key)
+        s3_path = "s3://{}/{}".format(self.s3_bucket, rendered_key)
         self.log.info(f"s3_path:{s3_path}")
         formatted_sql = StageToRedshiftOperator.copy_sql.format(
             table=self.table,
@@ -50,7 +53,9 @@ class StageToRedshiftOperator(BaseOperator):
             aws_secret_key=credentials.secret_key,
             ignore_headers=self.ignore_headers,
             delimiter=self.delimiter,
+            json_path=self.json_path
         )
+        redshift.run(formatted_sql)
 
 
 

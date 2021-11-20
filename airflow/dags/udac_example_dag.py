@@ -5,23 +5,22 @@ from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators import (StageToRedshiftOperator, LoadFactOperator,
                                 LoadDimensionOperator, DataQualityOperator)
 from airflow.operators.postgres_operator import PostgresOperator
-from helpers import SqlQueries
+from helpers.sql_queries import SqlQueries
 
 
 default_args = {
-    'owner': 'xxxx',
+    'owner': 'Y',
     'depends_on_past': False,
     'email_on_retry': False,
-    'retries': 3,
-    'retry_delay': timedelta(minutes=1),
-    
+    'retries': 1,
+    'retry_delay': timedelta(minutes=1)
 }
 
 dag = DAG('airflow_project',
           default_args=default_args,
           description='Load and transform data in Redshift with Airflow',
           start_date=datetime(2018, 11, 1, 0, 0, 0, 0),
-          end_date=datetime(2018, 11, 5, 0, 0, 0, 0),
+          end_date=datetime(2018, 11, 2, 0, 0, 0, 0),
           schedule_interval="@daily",
           catchup=True,
         )
@@ -34,9 +33,11 @@ stage_events_to_redshift = StageToRedshiftOperator(
     redshift_conn_id="redshift",
     aws_credentials_id="aws_credentials",
     table="log_data",
-    s3_bucket="s3://udacity-dend/log_data",
-    s3_key="{execution_date.year}/{execution_date.month}/{ds}-events.json" #tricky part, be aware of this, when you define a template field in the operator, then in the run time, the template reference variable can be used into this template field.  
+    s3_bucket="udacity-dend",
+    s3_key="log_data/{execution_date.year}/{execution_date.month}/{ds}-events.json" ,#tricky part, be aware of this, when you define a template field in the operator, then in the run time, the template reference variable can be used into this template field.  
+    json_path="s3://udacity-dend/log_json_path.json"
 )
+
 
 stage_songs_to_redshift = StageToRedshiftOperator(
     task_id='Stage_songs',
@@ -44,43 +45,54 @@ stage_songs_to_redshift = StageToRedshiftOperator(
     redshift_conn_id="redshift",
     aws_credentials_id="aws_credentials",
     table="song_data",
-    s3_bucket="s3://udacity-dend/song_data",
-    s3_key="song_data/A/A/"
+    s3_bucket="udacity-dend",
+    s3_key="song_data/A/A/",
+    json_path='auto'
 )
 
 load_songplays_table = LoadFactOperator(
     task_id='Load_songplays_fact_table',
     dag=dag,
     redshift_conn_id="redshift",
-    aws_credentials_id="aws_credentials"  
+    aws_credentials_id="aws_credentials",
+    table="songplays",
+    sql_query=SqlQueries.songplay_table_insert
 )
 
 load_user_dimension_table = LoadDimensionOperator(
     task_id='Load_user_dim_table',
     dag=dag,
     redshift_conn_id="redshift",
-    aws_credentials_id="aws_credentials"  
+    aws_credentials_id="aws_credentials",
+    table="users",
+    sql_query=SqlQueries.user_table_insert
 )
 
 load_song_dimension_table = LoadDimensionOperator(
     task_id='Load_song_dim_table',
     dag=dag,
     redshift_conn_id="redshift",
-    aws_credentials_id="aws_credentials"
+    aws_credentials_id="aws_credentials",
+    table="songs",
+    sql_query=SqlQueries.song_table_insert
 )
 
 load_artist_dimension_table = LoadDimensionOperator(
     task_id='Load_artist_dim_table',
     dag=dag,
     redshift_conn_id="redshift",
-    aws_credentials_id="aws_credentials"
+    aws_credentials_id="aws_credentials",
+    table="artists",
+    sql_query=SqlQueries.artist_table_insert
 )
 
 load_time_dimension_table = LoadDimensionOperator(
     task_id='Load_time_dim_table',
     dag=dag,
     redshift_conn_id="redshift",
-    aws_credentials_id="aws_credentials"
+    aws_credentials_id="aws_credentials",
+    table="time",
+    sql_query=SqlQueries.time_table_insert
 )
 
 run_quality_checks = DataQualityOperator(
