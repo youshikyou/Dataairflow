@@ -8,13 +8,12 @@ class StageToRedshiftOperator(BaseOperator):
     template_field =("s3_key",)
     copy_sql ="""
         COPY {table}
-        FROM '{s3_path}'
-        ACCESS_EKY_ID '{aws_credentials_id}'
+        FROM '{s3_bucket}'
+        ACCESS_KEY_ID '{aws_credentials_id}'
         SECRET_ACCESS_KEY '{aws_secret_key}'
-        IGNOREHEADER {ignore_headers}
-        DELIMITER '{delimiter}'
         JSON '{json_path}'
     """
+    
     @apply_defaults
     def __init__(self,
                  redshift_conn_id="",

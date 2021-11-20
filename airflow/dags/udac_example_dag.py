@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-import os
 from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators import (StageToRedshiftOperator, LoadFactOperator,
@@ -9,7 +8,7 @@ from helpers.sql_queries import SqlQueries
 
 
 default_args = {
-    'owner': 'Y',
+    'owner': 'yyyyy',
     'depends_on_past': False,
     'email_on_retry': False,
     'retries': 1,
@@ -32,9 +31,9 @@ stage_events_to_redshift = StageToRedshiftOperator(
     dag=dag,
     redshift_conn_id="redshift",
     aws_credentials_id="aws_credentials",
-    table="log_data",
+    table="staging_events",
     s3_bucket="udacity-dend",
-    s3_key="log_data/{execution_date.year}/{execution_date.month}/{ds}-events.json" ,#tricky part, be aware of this, when you define a template field in the operator, then in the run time, the template reference variable can be used into this template field.  
+    s3_key="log_data/{execution_date.year}/{execution_date.month}/{ds}-events.json",#tricky part, be aware of this, when you define a template field in the operator, then in the run time, the template reference variable can be used into this template field.  
     json_path="s3://udacity-dend/log_json_path.json"
 )
 
@@ -44,7 +43,7 @@ stage_songs_to_redshift = StageToRedshiftOperator(
     dag=dag,
     redshift_conn_id="redshift",
     aws_credentials_id="aws_credentials",
-    table="song_data",
+    table="staging_songs",
     s3_bucket="udacity-dend",
     s3_key="song_data/A/A/",
     json_path='auto'
@@ -97,7 +96,9 @@ load_time_dimension_table = LoadDimensionOperator(
 
 run_quality_checks = DataQualityOperator(
     task_id='Run_data_quality_checks',
-    dag=dag
+    dag=dag,
+    redshift_conn_id="redshift",
+    check_table=SqlQueries.check_table
 )
 
 end_operator = DummyOperator(task_id='Stop_execution',  dag=dag)
