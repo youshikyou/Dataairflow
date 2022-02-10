@@ -1,0 +1,1 @@
+airflow run dag_id task_id schedule
